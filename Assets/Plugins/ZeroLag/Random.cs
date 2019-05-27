@@ -10,21 +10,11 @@ namespace ZeroLag
         const long c = 2147483647;
         const long a = 6364136223846793005;
         private long seed;
-        public Random(long seed) {
-            this.seed = seed;
-        }
-
-        public void SetSeed(long seed)
-        {
-            this.seed = seed;
-        }
-        
-        private long RotateLeft(long x, Byte n)
-        {
-            return ((x << n) | (x >> (64 - n)));
-        }
-
+        public Random(long seed) => this.seed = seed;
+        public void SetSeed(long seed) => this.seed = seed;
+        private long RotateLeft(long x, Byte n) => ((x << n) | (x >> (64 - n)));
         public long GetSeed() => seed;
+
         /// <summary>
         /// range = [min;max]
         /// </summary>
@@ -51,16 +41,8 @@ namespace ZeroLag
             return rand;
         }
 
-        public T RandomElement<T>(T[] array)
-        {
-            return array[RangeInt(0, array.Length - 1)];
-        }
-
-        public T RandomElement<T>(IList<T> list)
-        {
-            return list[RangeInt(0, list.Count - 1)];
-        }
-
+        public T RandomElement<T>(T[] array) => array[RangeInt(0, array.Length - 1)];
+        public T RandomElement<T>(IList<T> list) => list[RangeInt(0, list.Count - 1)];
         public Fix64 RangeFrac(Fix64 min, Fix64 max)
         {
             Fix64 rand;
@@ -92,32 +74,21 @@ namespace ZeroLag
             return result;
         }
 
-        public bool Chance(Fix64 chance)
-        {
-            return chance > RangeFrac(0m, 1m);
-        }
-        
-        public bool randBool(Fix64 probability)
-        {
-            return RangeFrac(0, 1) < probability;
-        }
+        public bool Chance(Fix64 chance) => chance > RangeFrac(0m, 1m);
+        public bool randBool(Fix64 probability) => RangeFrac(0, 1) < probability;
         public long Next()
         {
             long next = a * RotateLeft(seed, 17) + c;
             seed = next;
             return next;
         }
-
         public T Element<T>(Array list) 
         {
             if (list.Length == 0) return default(T);
             if (list.Length == 1) return (T)list.GetValue(0);
             return (T)list.GetValue(RangeInt(0, list.Length - 1));
         }
-        public T Element<T>(IEnumerable<T> list) 
-        {
-            return Element(list.ToList());
-        }
+        public T Element<T>(IEnumerable<T> list) => Element(list.ToList());
         public T Element<T>(List<T> list) 
         {
             if (list.Count == 0) return default(T);

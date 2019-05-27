@@ -1,14 +1,12 @@
-﻿#if CLIENT
-using Alive;
+﻿//#if CLIENT
 using FixMath.NET;
 using System.Collections.Generic;
 using System.Threading;
-using PortalHunter.Tools;
 
 namespace ZeroLag
 {
-    [CLIENT]
-    public class EngineThreaded<T, S> : EngineWithResimulations<T, S> where T : PredictableModel<T, S> where S : IPredictableSettings<T, S>, new()
+    public class EngineThreaded<T, S> : EngineWithResimulations<T, S>
+        where T : PredictableModel<T, S> where S : IPredictableSettings<T, S>, new()
     {
         #region I transfer presentTime to calc thread from main thread
         object lockPresentTime = new object();
@@ -58,7 +56,7 @@ namespace ZeroLag
         #endregion
 
         #region I make calc thread give viewModel to main thread
-        ObjectPool viewModelPool = new ObjectPool();
+        object viewModelContext = new object();
         object lockViewModelBuffer = new object();
         T viewModelThreadBuffer;
         int viewModelStep;
@@ -67,7 +65,7 @@ namespace ZeroLag
             lock (lockViewModelBuffer)
             {
                 if (viewModelThreadBuffer != null && _viewModel.step < viewModelThreadBuffer.step)
-                    Utils.Swap(ref _viewModel, ref viewModelThreadBuffer);
+                    ZeroLagUtils.Swap(ref _viewModel, ref viewModelThreadBuffer);
                 viewModelStep = _viewModel.step;                
             }
         }
@@ -83,7 +81,7 @@ namespace ZeroLag
                     // Update viewModel.
                     modelToReturnToPool = viewModelThreadBuffer;
                     viewModelThreadBuffer = cursor;
-                    viewModelThreadBuffer.pool = viewModelPool;
+                    viewModelThreadBuffer.context = viewModelContext;
                 }
             }
             if (settingNeeded)
@@ -91,7 +89,7 @@ namespace ZeroLag
                 // Return previous viewModel to pool.
                 if (modelToReturnToPool != null)
                 {
-                    modelToReturnToPool.pool = pool;
+                    modelToReturnToPool.context = this;
                     modelToReturnToPool.MortifyWorld();
                     ReturnToPool(modelToReturnToPool);
                 }                
@@ -107,7 +105,7 @@ namespace ZeroLag
         {
             // Prepare start viewModel.
             _viewModel = GetModelFromPool();
-            _viewModel.pool = viewModelPool;
+            _viewModel.context = viewModelContext;
             _viewModel.EnliveWorld();
             if (simulate)
             {
@@ -127,7 +125,7 @@ namespace ZeroLag
         {
             base.Stop();
             calcThread.Abort();
-            UnityEngine.Debug.Log("Stop thread");
+            //UnityEngine.Debug.Log("Stop thread");
         }
         void RunCalcThread()
         {
@@ -155,4 +153,4 @@ namespace ZeroLag
         #endregion
     }
 }
-#endif
+//#endif

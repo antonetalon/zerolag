@@ -1,22 +1,18 @@
-﻿
-using FixMath.NET;
+﻿using FixMath.NET;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace ZeroLag
 {
-    public class EngineWithResimulations<T, S> : Engine<T, S> where T : PredictableModel<T, S> where S : IPredictableSettings<T, S>, new()
+    public class EngineWithResimulations<T, S> : Engine<T, S> 
+        where T : PredictableModel<T, S> where S : IPredictableSettings<T, S>, new()
     {
         #region Start/stop match
         public static int GetDenseSnapshotsCount(Fix64 maxServerAllowedLag, Fix64 stepDuration)
-        {
-            return Math.Max(1, (int)(maxServerAllowedLag * 2 / stepDuration));
-        }
+            => Math.Max(1, (int)(maxServerAllowedLag * 2 / stepDuration));
         public static int GetSparseSnapshotsFrequency(Fix64 maxServerAllowedLag, Fix64 stepDuration)
-        {
-            return GetDenseSnapshotsCount(maxServerAllowedLag, stepDuration);
-        }
+            => GetDenseSnapshotsCount(maxServerAllowedLag, stepDuration);
         public static int GetSparseSnapshotsCount()
         {
             const int minSparseModels = 10; // There should be enough sparse models for all cases.
@@ -28,7 +24,8 @@ namespace ZeroLag
                   GetSparseSnapshotsCount(), GetSparseSnapshotsFrequency(settings.maxAllowedLag, settings.fixedDt), debugTag)
         { }
         
-        public EngineWithResimulations(S settings, bool simulate, int savedModelsDenseCount, int savedModelsSparseCount, int sparsePeriod, string debugTag) 
+        public EngineWithResimulations(S settings, bool simulate, 
+            int savedModelsDenseCount, int savedModelsSparseCount, int sparsePeriod, string debugTag) 
             : base(settings, simulate, savedModelsDenseCount + savedModelsSparseCount, true, debugTag)
         {
             InitHistory(savedModelsDenseCount, savedModelsSparseCount, sparsePeriod);
@@ -187,10 +184,7 @@ namespace ZeroLag
 
         #region Give me timeouts and I'll consume them = consider in simulation
         List<TimeoutCommand> notConsideredCommands;
-        void InitTimeouts()
-        {
-            notConsideredCommands = new List<TimeoutCommand>();
-        }
+        void InitTimeouts() => notConsideredCommands = new List<TimeoutCommand>();
         public override void ReceiveTimeout(TimeoutCommand timeout)
         {
             base.ReceiveTimeout(timeout);
@@ -207,7 +201,6 @@ namespace ZeroLag
             playedGameReplay.commands[targetCommandStep].RemoveOne(cmd => cmd.hash == timeout.targetCommandHash);
             if (timeout.whatToDo == ActionOnTimeout.ExecuteLater)
                 ReceiveCommand(targetCommand); // Receive command later.
-
             return true;
         }
         protected void TryConsumeTimeouts()

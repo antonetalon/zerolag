@@ -10,7 +10,7 @@ namespace ZeroLag
         public abstract T Copy();
         public abstract int step { get; }
         public abstract long CalculateHash();
-
+        public object context; // Threaded PredictableModels can require to know their context - are they view models in main thread or deeply sunken under the hood in some thread.
 
         public virtual void EnliveWorld() { }
         public virtual void MortifyWorld() { }

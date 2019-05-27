@@ -1,5 +1,4 @@
-﻿
-namespace ZeroLag
+﻿namespace ZeroLag
 {
     public abstract partial class ZeroLagCommand : Command
     {
@@ -18,9 +17,8 @@ namespace ZeroLag
             return ActionOnTimeout.Cancel;
         }
         public ZeroLagCommand() { }
-        public override string ToString()
-        {
-            return string.Format("type = {0} playerId={1}, stepInd={2}, hash = {3}", this.GetType().Name, playerId, stepInd, CalculateHash());
-        }
+        public override string ToString() 
+            => string.Format("type = {0} playerId={1}, stepInd={2}, hash = {3}", 
+                this.GetType().Name, playerId, stepInd, CalculateHash());
     }
 }

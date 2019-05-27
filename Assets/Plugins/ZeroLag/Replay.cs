@@ -14,7 +14,8 @@ namespace ZeroLag
                 this.stepDts = stepDts;
         }
         public S settings = new S();
-        public Dictionary<int, List<ZeroLagCommand>> commands { get; private set; } = new Dictionary<int, List<ZeroLagCommand>>();
+        public Dictionary<int, List<ZeroLagCommand>> commands { get; private set; } 
+            = new Dictionary<int, List<ZeroLagCommand>>();
 
         public bool fixedDt;
         protected List<Fix64> stepDts = new List<Fix64>(); // TODO: add special mode when dt is fixed, save only steps count.
@@ -63,10 +64,7 @@ namespace ZeroLag
         /// <summary>
         /// Commands saved by step they should be executed in.
         /// </summary>
-        protected virtual int GetCommandKey(ZeroLagCommand command)
-        {
-            return command.stepInd;
-        }
+        protected virtual int GetCommandKey(ZeroLagCommand command) => command.stepInd;
 
         public virtual ZeroLagCommand GetTimeoutedCommand(TimeoutCommand timeout)
         {
@@ -91,10 +89,7 @@ namespace ZeroLag
         /// <summary>
         /// Commands saved by step they received in.
         /// </summary>
-        protected override int GetCommandKey(ZeroLagCommand command)
-        {
-            return getCurrStep();
-        }
+        protected override int GetCommandKey(ZeroLagCommand command) => getCurrStep();
 
         public Dictionary<int, List<TimeoutCommand>> timeouts = new Dictionary<int, List<TimeoutCommand>>();        
         public void ReceiveTimeout(TimeoutCommand timeout)
@@ -108,15 +103,6 @@ namespace ZeroLag
             }
             currStepReceivedTimeouts.Add(timeout);
         }
-                
-#if CLIENT
-        public static NetworkReplay<T, S> ReadFromFileOnPC(string fileName)
-        {
-            var replay = Utils.ReadFromFile<NetworkReplay<T, S>>(fileName, false);
-            replay.OnAfterDeserialize();
-            return replay;
-        }
-#endif
         
         public override ZeroLagCommand GetTimeoutedCommand(TimeoutCommand timeout)
         {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using FixMath.NET;
@@ -7,7 +6,7 @@ using FixMath.NET;
 namespace ZeroLag
 {
     /// <summary>
-    /// 
+    /// Main class that actually does the thing - plays game.
     /// </summary>
     /// <typeparam name="T">Type for battle model on each step</typeparam>
     /// <typeparam name="S">Type for game settings const for each game</typeparam>
@@ -34,8 +33,8 @@ namespace ZeroLag
                 return;
             playedGameReplay.ReceiveCommand(command);
             // Declare as not actualized all steps after this command's step.
-            //if (command.stepInd == -1)
-            //    throw exception.
+            // if (command.stepInd == -1)
+            //     throw exception.
             lastActualStep = Math.Min(lastActualStep, command.stepInd);
         }
 
@@ -59,7 +58,8 @@ namespace ZeroLag
         protected abstract bool replicationAllowed { get; }
         protected T CreateModelInstance()
         {
-            T instance = settings.CreateZeroModel(this, replicationAllowed);
+            T instance = settings.CreateZeroModel(replicationAllowed);
+            instance.context = this;
             //instance.__debugTag = debugTag;
             onModelCreated?.Invoke(instance);
             return instance;
@@ -102,10 +102,7 @@ namespace ZeroLag
         /// <summary>
         /// Stops simulation, stops all threads, do not do anything in update, dont add anything to replay.
         /// </summary>
-        public virtual void Stop()
-        {
-            stopped = true;
-        }
+        public virtual void Stop() => stopped = true;
         #endregion
 
         #region Updating present time
@@ -207,7 +204,7 @@ namespace ZeroLag
             return (model.CalculateHash() % 1000).ToString("000");
         }
 
-    protected string GetShowableCommands(int step)
+        protected string GetShowableCommands(int step)
         {
             long stepHash = CalcStepCommandsHash(step, playedGameReplay);            
             return (stepHash % 1000).ToString("000");
