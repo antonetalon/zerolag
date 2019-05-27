@@ -9,5 +9,6 @@ namespace ZeroLag
         public abstract void Update(Fix64 dt, IEnumerable<ZeroLagCommand> consideredCommands); // Update game logic with every given command, dont inc curr step.
         public abstract T Copy();
         public abstract int step { get; }
+        public abstract long CalculateHash();
     }
 }

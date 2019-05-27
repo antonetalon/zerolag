@@ -34,8 +34,8 @@ namespace ZeroLag
                 return;
             playedGameReplay.ReceiveCommand(command);
             // Declare as not actualized all steps after this command's step.
-            if (command.stepInd == -1)
-                Debug.Log("hi");
+            //if (command.stepInd == -1)
+            //    throw exception.
             lastActualStep = Math.Min(lastActualStep, command.stepInd);
         }
 
@@ -59,8 +59,8 @@ namespace ZeroLag
         protected abstract bool replicationAllowed { get; }
         protected T CreateModelInstance()
         {
-            T instance = settings.CreateZeroModel(pool, replicationAllowed);
-            instance.__debugTag = debugTag;
+            T instance = settings.CreateZeroModel(this, replicationAllowed);
+            //instance.__debugTag = debugTag;
             onModelCreated?.Invoke(instance);
             return instance;
         }
@@ -73,7 +73,6 @@ namespace ZeroLag
         #endregion
 
         #region Start/stop match
-        protected readonly ObjectPool pool = new ObjectPool();
         /// <summary>
         /// Game settings.
         /// they're independant from steps and are constant during battle.
@@ -208,7 +207,7 @@ namespace ZeroLag
             return (model.CalculateHash() % 1000).ToString("000");
         }
 
-        protected string GetShowableCommands(int step)
+    protected string GetShowableCommands(int step)
         {
             long stepHash = CalcStepCommandsHash(step, playedGameReplay);            
             return (stepHash % 1000).ToString("000");
@@ -222,7 +221,7 @@ namespace ZeroLag
             if (replay.commands.TryGetValue(step, out currStepCommands))
             {
                 foreach (var currCommand in currStepCommands)
-                    stepHash += currCommand.CalculateHashWithPriority();
+                    stepHash += currCommand.CalculateHash();
             }
 
             stepHash += CalcStepCommandsHash(step - 1, replay);

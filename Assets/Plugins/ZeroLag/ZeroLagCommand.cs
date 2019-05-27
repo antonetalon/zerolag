@@ -5,6 +5,7 @@ namespace ZeroLag
     {
         public string playerId;
         public int stepInd;
+        public long hash;
         public void OnTimedout(TimeoutCommand timeout)
         {
             if (timeout.whatToDo == ActionOnTimeout.ExecuteLater)
@@ -19,7 +20,7 @@ namespace ZeroLag
         public ZeroLagCommand() { }
         public override string ToString()
         {
-            return string.Format("type = {0} playerId={1}, stepInd={2}, hash = {3}", this.GetType().Name, playerId, stepInd, CalculateHashWithPriority());
+            return string.Format("type = {0} playerId={1}, stepInd={2}, hash = {3}", this.GetType().Name, playerId, stepInd, CalculateHash());
         }
     }
 }

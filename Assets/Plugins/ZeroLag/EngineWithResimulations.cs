@@ -204,7 +204,7 @@ namespace ZeroLag
             int targetCommandStep = targetCommand.stepInd;
             lastActualStep = Math.Min(lastActualStep, targetCommandStep);
             targetCommand.OnTimedout(timeout);
-            playedGameReplay.commands[targetCommandStep].RemoveOne(cmd => cmd.hashWithPriority == timeout.targetCommandHash);
+            playedGameReplay.commands[targetCommandStep].RemoveOne(cmd => cmd.hash == timeout.targetCommandHash);
             if (timeout.whatToDo == ActionOnTimeout.ExecuteLater)
                 ReceiveCommand(targetCommand); // Receive command later.
 

@@ -43,9 +43,8 @@ namespace ZeroLag
                 currTurnCommands = new List<ZeroLagCommand>();
                 commands.Add(commandKey, currTurnCommands);
             }
-            command.hashWithPriority = command.CalculateHashWithPriority();
-            currTurnCommands.InsertSorted(command, cmd => cmd.hashWithPriority);
-            commandsModified = true;
+            command.hash = command.CalculateHash();
+            currTurnCommands.InsertSorted(command, cmd => cmd.hash);
         }
 
         public int totalSteps; // Present step after replay finished.
@@ -74,7 +73,7 @@ namespace ZeroLag
             List<ZeroLagCommand> currTurnCommands;
             if (!commands.TryGetValue(timeout.targetCommandStep, out currTurnCommands))
                 return null;
-            ZeroLagCommand targetCommand = currTurnCommands.Find(cmd => cmd.hashWithPriority == timeout.targetCommandHash);
+            ZeroLagCommand targetCommand = currTurnCommands.Find(cmd => cmd.hash == timeout.targetCommandHash);
             return targetCommand;
         }
     }
@@ -108,7 +107,6 @@ namespace ZeroLag
                 timeouts.Add(step, currStepReceivedTimeouts);
             }
             currStepReceivedTimeouts.Add(timeout);
-            timeoutsModified = true;
         }
                 
 #if CLIENT
@@ -119,14 +117,7 @@ namespace ZeroLag
             return replay;
         }
 #endif
-
-        public static NetworkReplay<T, S> ReadFromFileOnDevice(byte[] bytes)
-        {
-            var replay = Utils.DeserializeFromBytes<NetworkReplay<T, S>>(bytes);
-            replay.OnAfterDeserialize();
-            return replay;
-        }
-
+        
         public override ZeroLagCommand GetTimeoutedCommand(TimeoutCommand timeout)
         {
             var replay = FlatternToReplay();
@@ -148,7 +139,7 @@ namespace ZeroLag
                     ZeroLagCommand targetCommand = replay.GetTimeoutedCommand(timeout);
                     targetCommand.OnTimedout(timeout);
                     var targetStepCommands = replay.commands[timeout.targetCommandStep];
-                    targetStepCommands.RemoveOne(cmd => cmd.hashWithPriority == timeout.targetCommandHash);
+                    targetStepCommands.RemoveOne(cmd => cmd.hash == timeout.targetCommandHash);
 
                     if (timeout.whatToDo == ActionOnTimeout.ExecuteLater)
                         replay.ReceiveCommand(targetCommand); // Receive command later.

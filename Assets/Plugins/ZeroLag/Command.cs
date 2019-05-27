@@ -1,10 +1,9 @@
-﻿using System.IO;
-
-namespace ZeroLag
+﻿namespace ZeroLag
 {
-    public partial class Command
+    public abstract class Command
     {
         public Command() { }
         public virtual bool logged { get { return true; } }
+        public abstract long CalculateHash();
     }
 }
