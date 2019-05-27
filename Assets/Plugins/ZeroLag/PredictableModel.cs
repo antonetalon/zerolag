@@ -10,5 +10,10 @@ namespace ZeroLag
         public abstract T Copy();
         public abstract int step { get; }
         public abstract long CalculateHash();
+
+
+        public virtual void EnliveWorld() { }
+        public virtual void MortifyWorld() { }
+        public abstract void UpdateFrom(T other);
     }
 }
