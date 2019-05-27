@@ -1,9 +1,8 @@
-﻿using Alive;
-using FixMath.NET;
+﻿using FixMath.NET;
 
 namespace ZeroLag
 {
-    public interface IPredictableSettings<T, S> : ISerializable where T : PredictableModel<T, S> 
+    public interface IPredictableSettings<T, S> where T : PredictableModel<T, S> 
     {
         T CreateZeroModel(ObjectPool pool, bool replicationAllowed);
         Fix64 fixedDt { get; }

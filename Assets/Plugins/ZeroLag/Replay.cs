@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using FixMath.NET;
-using OmniBEPUPhysics;
-using PortalHunter.Tools;
-using Utils = PortalHunter.Tools.Utils;
 
 namespace ZeroLag
 {
-    [GenSerialization, GenHashing]
-    public partial class Replay<T, S> : ISerializable where S : IPredictableSettings<T, S>, new() where T : PredictableModel<T, S>
+    public partial class Replay<T, S> where S : IPredictableSettings<T, S>, new() where T : PredictableModel<T, S>
     {
         public Replay() { }
         public Replay(bool fixedDt, S settings, List<Fix64> stepDts = null) {
@@ -17,11 +13,11 @@ namespace ZeroLag
             if (stepDts != null)
                 this.stepDts = stepDts;
         }
-        [GenInclude] public S settings = new S();
-        [GenIgnore] public Dictionary<int, List<ZeroLagCommand>> commands { get; private set; } = new Dictionary<int, List<ZeroLagCommand>>();
+        public S settings = new S();
+        public Dictionary<int, List<ZeroLagCommand>> commands { get; private set; } = new Dictionary<int, List<ZeroLagCommand>>();
 
-        [GenInclude] public bool fixedDt;
-        [GenInclude] protected List<Fix64> stepDts = new List<Fix64>(); // TODO: add special mode when dt is fixed, save only steps count.
+        public bool fixedDt;
+        protected List<Fix64> stepDts = new List<Fix64>(); // TODO: add special mode when dt is fixed, save only steps count.
         public int stepDtsCount => stepDts.Count;
         public Fix64 GetDt(int step) // Thread-safe. 
         {
@@ -30,7 +26,7 @@ namespace ZeroLag
             else
                 return stepDts[step]; // Single threaded version returns data from replay.
         }
-        [GenIgnore] public Fix64 savedTime { get; private set; }
+        public Fix64 savedTime { get; private set; }
         public void AddStep(Fix64 dt)
         {
             stepDts.Add(dt);
@@ -52,7 +48,7 @@ namespace ZeroLag
             commandsModified = true;
         }
 
-        [GenInclude] public int totalSteps; // Present step after replay finished.
+        public int totalSteps; // Present step after replay finished.
         public Fix64 CalcDuration()
         {
             if (fixedDt)
@@ -64,52 +60,6 @@ namespace ZeroLag
                 return sum;
             }
         }
-
-        // Serialization workarounds.
-        [GenIgnore] bool commandsModified;
-        [GenIgnore] List<List<ZeroLagCommand>> _commandsSerializable;
-        [GenInclude, CanBeNull] List<List<ZeroLagCommand>> commandsSerializable
-        {
-            get {
-                if (!commandsModified)
-                    return null;
-                _commandsSerializable = new List<List<ZeroLagCommand>>();
-                foreach (var item in commands)
-                {
-                    int step = item.Key;
-                    List<ZeroLagCommand> stepCommands = item.Value;
-                    while (step >= _commandsSerializable.Count)
-                        _commandsSerializable.Add(new List<ZeroLagCommand>());
-                    foreach (var command in stepCommands)
-                        _commandsSerializable[step].InsertSorted(command, cmd=>cmd.hashWithPriority);
-                }
-                return _commandsSerializable;
-            }
-            set {
-                commands.Clear();
-                int step = 0;
-                foreach (var stepCommandsSerializable in value)
-                {
-                    step++;
-                    if (stepCommandsSerializable.Count>0)
-                    {
-                        var stepCommands = new List<ZeroLagCommand>();
-                        foreach (var command in stepCommandsSerializable)
-                        {
-                            command.hashWithPriority = command.CalculateHashWithPriority();
-                            stepCommands.InsertSorted(command, cmd => cmd.hashWithPriority);
-                        }
-                        commands.Add(step, stepCommands);
-                    }                    
-                }
-                commandsModified = true;
-            }
-        }
-        public virtual void OnAfterDeserialize()
-        {
-            commandsSerializable = _commandsSerializable;
-        }
-        
 
         /// <summary>
         /// Commands saved by step they should be executed in.
@@ -128,12 +78,12 @@ namespace ZeroLag
             return targetCommand;
         }
     }
-    [GenSerialization, GenHashing]
+    
     public partial class NetworkReplay<T, S> : Replay<T, S> where S : IPredictableSettings<T, S>, new() where T : PredictableModel<T, S>
     {
         public NetworkReplay() { }
-        [GenIgnore] Func<int> getCurrStep;
-        [GenInclude] public bool resimulations;
+        Func<int> getCurrStep;
+        public bool resimulations;
         public NetworkReplay(bool resimulations, bool fixedDt, S settings, Func<int> getCurrStep):base(fixedDt, settings)
         {
             this.getCurrStep = getCurrStep;
@@ -147,7 +97,7 @@ namespace ZeroLag
             return getCurrStep();
         }
 
-        [GenIgnore] public Dictionary<int, List<TimeoutCommand>> timeouts = new Dictionary<int, List<TimeoutCommand>>();        
+        public Dictionary<int, List<TimeoutCommand>> timeouts = new Dictionary<int, List<TimeoutCommand>>();        
         public void ReceiveTimeout(TimeoutCommand timeout)
         {
             List<TimeoutCommand> currStepReceivedTimeouts;
@@ -160,53 +110,7 @@ namespace ZeroLag
             currStepReceivedTimeouts.Add(timeout);
             timeoutsModified = true;
         }
-
-
-        // Serialization workarounds.
-        [GenIgnore] bool timeoutsModified;
-        [GenIgnore] List<List<TimeoutCommand>> _timeoutsSerializable;
-        [GenInclude, CanBeNull] List<List<TimeoutCommand>> timeoutsSerializable
-        {
-            get
-            {
-                if (!timeoutsModified)
-                    return null;
-                _timeoutsSerializable = new List<List<TimeoutCommand>>();
-                foreach (var item in timeouts)
-                {
-                    int step = item.Key;
-                    List<TimeoutCommand> stepTimeouts = item.Value;
-                    while (step >= _timeoutsSerializable.Count)
-                        _timeoutsSerializable.Add(new List<TimeoutCommand>());
-                    _timeoutsSerializable[step] = stepTimeouts;
-                }
-                return _timeoutsSerializable;
-            }
-            set
-            {
-                timeouts.Clear();
-                if (value != null)
-                {
-                    int step = 0;
-                    foreach (var stepTimeoutsSerializable in value)
-                    {
-                        if (stepTimeoutsSerializable.Count > 0)
-                        {
-                            List<TimeoutCommand> stepTimeouts = new List<TimeoutCommand>();
-                            timeouts.Add(step, stepTimeouts);
-                        }
-                        step++;
-                    }
-                }
-                timeoutsModified = true;
-            }
-        }
-        public override void OnAfterDeserialize()
-        {
-            base.OnAfterDeserialize();
-            timeoutsSerializable = _timeoutsSerializable;
-        }
-
+                
 #if CLIENT
         public static NetworkReplay<T, S> ReadFromFileOnPC(string fileName)
         {

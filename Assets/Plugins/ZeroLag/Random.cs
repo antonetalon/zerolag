@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using FixMath.NET;
-using ServerEngine;
 
 namespace ZeroLag
 {
-    [GenBattleData, GenSerialization, GenTask(GenTaskFlags.JsonSerialization)]
     public partial class Random
     {
         const long c = 2147483647;

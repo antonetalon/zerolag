@@ -1,14 +1,11 @@
-﻿using Multiplayer;
-
-namespace ZeroLag
+﻿namespace ZeroLag
 {
-    [BattleNetworkChannelUsage(BattleNetworkChannel.AllCostServer2Client)]
     public partial class TimeoutCommand : Command
     {   
-        [GenInclude] public int targetCommandStep { get; private set; }
-        [GenInclude] public long targetCommandHash { get; private set; }
-        [GenInclude] public ActionOnTimeout whatToDo { get; private set; }
-        [GenInclude] public int executeLaterStep { get; private set; }        
+        public int targetCommandStep { get; private set; }
+        public long targetCommandHash { get; private set; }
+        public ActionOnTimeout whatToDo { get; private set; }
+        public int executeLaterStep { get; private set; }        
         public TimeoutCommand(ZeroLagCommand command, int minModifyableStep)
         {
             targetCommandStep = command.stepInd;

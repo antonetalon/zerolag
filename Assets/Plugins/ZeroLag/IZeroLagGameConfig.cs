@@ -1,8 +1,6 @@
-﻿using Alive;
-
-namespace ZeroLag
+﻿namespace ZeroLag
 {
-    public interface IZeroLagGameConfig<T, S> : ISerializable where T : PredictableModel<T, S>
+    public interface IZeroLagGameConfig<T, S> where T : PredictableModel<T, S>
     {
         T CreateZeroModel(ObjectPool pool, bool replicationAllowed);
     }
