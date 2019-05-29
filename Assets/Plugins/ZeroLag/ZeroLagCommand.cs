@@ -4,17 +4,15 @@
     {
         public string playerId;
         public int stepInd;
-        public long hash;
+        public long hash;        
+        public virtual ActionOnTimeout WhatToDoOnTimeout() => ActionOnTimeout.Cancel;
+
         public void OnTimedout(TimeoutCommand timeout)
         {
             if (timeout.whatToDo == ActionOnTimeout.ExecuteLater)
                 stepInd = timeout.executeLaterStep;
             else
                 stepInd = -1;
-        }
-        public virtual ActionOnTimeout WhatToDoOnTimeout()
-        {
-            return ActionOnTimeout.Cancel;
         }
         public ZeroLagCommand() { }
         public override string ToString() 
